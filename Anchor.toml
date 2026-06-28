@@ -8,8 +8,11 @@ skip-lint = false
 [programs.localnet]
 contador = "J6VdM3QeQFL3m2Shh3PXA6DcmELLhQfUwCqbhykzAhSa"
 
+[programs.devnet]
+contador = "J6VdM3QeQFL3m2Shh3PXA6DcmELLhQfUwCqbhykzAhSa"
+
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
