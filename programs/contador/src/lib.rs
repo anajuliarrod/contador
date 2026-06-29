@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 
-// Esse ID é um placeholder. Depois do `anchor build`, rode `anchor keys sync`
-// pra ele virar o ID real do SEU programa (gerado em target/deploy/contador-keypair.json).
+// ID do programa deployado na devnet (sincronizado via `anchor keys sync`).
 declare_id!("J6VdM3QeQFL3m2Shh3PXA6DcmELLhQfUwCqbhykzAhSa");
 
 #[program]
@@ -35,11 +34,13 @@ pub mod contador {
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    // init cria a conta · payer paga o rent · space = 8 (discriminador) + 8 (u64) + 32 (Pubkey)
+    // init cria a conta · payer paga o rent · space = discriminador (8) + INIT_SPACE.
+    // INIT_SPACE vem do #[derive(InitSpace)] na struct Contador, então o tamanho
+    // se recalcula sozinho se um campo for adicionado/removido.
     #[account(
         init,
         payer = usuario,
-        space = 8 + 8 + 32,
+        space = Contador::DISCRIMINATOR.len() + Contador::INIT_SPACE,
     )]
     pub contador: Account<'info, Contador>,
 
@@ -64,6 +65,7 @@ pub struct Increment<'info> {
 // ---- Parte 2: conta de estado ----
 
 #[account]
+#[derive(InitSpace)]
 pub struct Contador {
     pub valor: u64,   // 8 bytes
     pub dono: Pubkey, // 32 bytes

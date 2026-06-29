@@ -49,7 +49,11 @@ O estado vive em uma **conta**, não no programa. Cada contador é uma conta
 ## Teste
 
 `programs/contador/tests/test_initialize.rs` carrega o `.so` compilado em uma VM
-Solana in-process (**LiteSVM**) e:
+Solana in-process (**LiteSVM**). São três testes:
 
-1. envia `initialize(valor = 0)` → confere `valor == 0` e `dono == usuário`;
-2. envia `increment()` → confere `valor == 1`.
+1. **fluxo feliz** - `initialize(valor = 0)` → confere `valor == 0` e `dono == usuário`;
+   depois `increment()` → confere `valor == 1`;
+2. **controle de acesso** - um não-dono que chama `increment()` é rejeitado pela
+   constraint `has_one = dono`, e o valor não muda;
+3. **overflow** - `initialize(u64::MAX)` seguido de `increment()` falha no
+   `checked_add` (`ContadorError::Overflow`), sem alterar o estado.

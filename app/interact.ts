@@ -1,9 +1,9 @@
 /**
  * Interaction script — calls initialize() then increment() on the deployed
- * `contador` program (devnet) and prints the on-chain state after each step.
+ * `contador` program and prints the on-chain state after each step.
  *
  * Run with (provider is read from these two env vars):
- *   ANCHOR_PROVIDER_URL="<devnet RPC>" \
+ *   ANCHOR_PROVIDER_URL="<RPC URL>" \
  *   ANCHOR_WALLET="$HOME/.config/solana/id.json" \
  *   npx ts-node app/interact.ts
  */
@@ -12,6 +12,17 @@ import * as anchor from "@anchor-lang/core";
 // The IDL carries the program address + the full instruction/account layout.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const idl = require("../target/idl/contador.json");
+
+/** Maps the active RPC endpoint to the Solana Explorer `?cluster=` suffix (mainnet → none). */
+function explorerCluster(rpcEndpoint: string): string {
+  const url = rpcEndpoint.toLowerCase();
+  if (url.includes("devnet")) return "?cluster=devnet";
+  if (url.includes("testnet")) return "?cluster=testnet";
+  if (url.includes("localhost") || url.includes("127.0.0.1")) {
+    return `?cluster=custom&customUrl=${encodeURIComponent(rpcEndpoint)}`;
+  }
+  return "";
+}
 
 async function main() {
   // Provider = RPC connection + wallet (from ANCHOR_PROVIDER_URL / ANCHOR_WALLET).
@@ -64,12 +75,13 @@ async function main() {
   console.log("  -> valor =", estado.valor.toString());
 
   const base = "https://explorer.solana.com";
-  console.log("\n✅ initialize -> increment done on devnet");
+  const q = explorerCluster(provider.connection.rpcEndpoint);
+  console.log("\n✅ initialize -> increment done");
   console.log(
-    `account : ${base}/address/${contadorKp.publicKey.toBase58()}?cluster=devnet`
+    `account : ${base}/address/${contadorKp.publicKey.toBase58()}${q}`
   );
-  console.log(`init tx : ${base}/tx/${sigInit}?cluster=devnet`);
-  console.log(`inc  tx : ${base}/tx/${sigInc}?cluster=devnet`);
+  console.log(`init tx : ${base}/tx/${sigInit}${q}`);
+  console.log(`inc  tx : ${base}/tx/${sigInc}${q}`);
 }
 
 main().then(
